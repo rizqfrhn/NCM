@@ -50,60 +50,64 @@ namespace NCM
             Console.WriteLine($"Scan started in the background.");
         }
 
-        static void GetDataORU(string[] args)
+        static async Task GetDataORU(string[] args)
         {
 
-            ProcessStartInfo start = new ProcessStartInfo();
-            start.FileName = "C:\\Users\\TRAKINDO\\AppData\\Local\\Programs\\Python\\Python311\\python.exe";
+            ProcessStartInfo start = new ProcessStartInfo(){
+            FileName = "C:\\Users\\TRAKINDO\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
             // Console.Write(args.Length);
             // arg[0] = Path to your python script (example : "C:\\add_them.py")
             // arg[1] = first arguement taken from  C#'s main method's args variable (here i'm passing a number : 5)
             // arg[2] = second arguement taken from  C#'s main method's args variable ( here i'm passing a number : 6)
             // pass these to your Arguements property of your ProcessStartInfo instance
 
-            start.Arguments = string.Format("{0} {1} {2} {3}", args[0], args[1], args[2], args[3]);
-            start.UseShellExecute = false;
-            start.RedirectStandardOutput = true;       
-            // start.RedirectStandardError = true; // Redirect errors
-            // start.CreateNoWindow = true; // Don't create a new window
-            
-            // try
-            // {
-            //     using (Process process = Process.Start(start))
-            //     {
-            //         // Read the output asynchronously
-            //         process.OutputDataReceived += (sender, e) =>
-            //         {
-            //             if (!string.IsNullOrEmpty(e.Data))
-            //             {
-            //                 Console.WriteLine("Output: " + e.Data);
-            //             }
-            //         };
-            //         process.ErrorDataReceived += (sender, e) =>
-            //         {
-            //             if (!string.IsNullOrEmpty(e.Data))
-            //             {
-            //                 Console.WriteLine("Error: " + e.Data);
-            //             }
-            //         };
-            //         process.BeginOutputReadLine(); // Begin reading the output
-            //         process.BeginErrorReadLine(); // Begin reading the error output
-            //     }
-            // }
-            // catch (Exception ex)
-            // {
-            //     Console.WriteLine("Error starting process: " + ex.Message);
-            // }
-            using (Process process = Process.Start(start))
-            {
-                using (StreamReader reader = process.StandardOutput)
-                {
-                    string result = reader.ReadToEnd();
-                    Console.Write(result);
+            Arguments = string.Format("{0} {1} {2} {3}", args[0], args[1], args[2], args[3]),
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true, // Redirect errors
+            CreateNoWindow = true // Don't create a new window
+            };
 
+            try
+            {
+                using (Process process = new Process())
+                {
+                    process.StartInfo = start;
+                    process.Start();
+                    
+                    // Asynchronously read output and error streams to avoid blocking
+                    Task outputTask = Task.Run(() =>
+                    {
+                        using (StreamReader reader = process.StandardOutput)
+                        {
+                            string line;
+                            while ((line = reader.ReadLine()) != null)
+                            {
+                                Console.WriteLine("Python Output: " + line);
+                            }
+                        }
+                    });
+
+                    Task errorTask = Task.Run(() =>
+                    {
+                        using (StreamReader reader = process.StandardError)
+                        {
+                            string line;
+                            while ((line = reader.ReadLine()) != null)
+                            {
+                                Console.WriteLine("Python Error: " + line);
+                            }
+                        }
+                    });
+
+                    // Wait for the process to complete asynchronously
+                    await Task.WhenAll(outputTask, errorTask);
                 }
             }
-            Console.Read();
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error starting process: " + ex.Message);
+            }
         }
 
         private async Task StartScanAsyncORU()
@@ -148,7 +152,7 @@ namespace NCM
                         string nolhd = lastOctet;
 
                         InsertIpORU(loaderip, nolhd, macORU);
-                        GetDataORU([getdataoru, loaderip, nolhd, macORU]);
+                        await GetDataORU([getdataoru, loaderip, nolhd, macORU]);
                         Console.WriteLine($"Inserted IP: {loaderip}, MAC Address: {macORU}");
                     }
                     else

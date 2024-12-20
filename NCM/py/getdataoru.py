@@ -185,6 +185,7 @@ def main():
 				
 				# Insert data to DB
 				updatedetailORU(channelconfig, essid, bridging, maccloning, iscloning, channelroam, delay, leavethreshold, scanthreshold, minsignal)
+				browser.close()
 		except:
 			print('Data Unavailable')
 
