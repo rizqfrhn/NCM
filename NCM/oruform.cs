@@ -276,7 +276,7 @@ namespace NCM
             {
                 using (Ping ping = new Ping())
                 {
-                    PingReply reply = ping.Send(ip, 1000); // Timeout of 1000 ms (1 second)
+                    PingReply reply = ping.Send(ip, 1); // Timeout of 1000 ms (1 second)
                     return reply.Status == IPStatus.Success;
                 }
             }

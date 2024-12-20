@@ -1,6 +1,7 @@
 from msvcrt import getch
 import string
 from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -83,42 +84,50 @@ def main():
 				loginbtn = browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[2]/input[1]')
 					
 				loginbtn.click()
+				browser.execute_script('window.open("")')
+				time.sleep(3)
 
 				print("ini coba klik button login")
-				
+			
 				try:
-					if len(browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[1]/div/div')) > 0:
-						print("Go go Login with password!!")
-						insertpass = browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[1]/fieldset/fieldset/div[2]/div/input')
-						insertpass.sendKeys("Minestar#1");
+					if browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[1]/div/div'):
+						insertpass = browser.find_element(By.NAME,'password')
+						insertpass.send_keys("Minestar#1")
+						loginbtn = browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[2]/input[1]')
+						loginbtn.click()
+						print("Click Login")
+						browser.execute_script('window.open("")')
+						time.sleep(3)
+					else:
+						loginbtn = browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[2]/input[1]')
 						loginbtn.click()
 						browser.execute_script('window.open("")')
 						time.sleep(3)
-					else: 
 						print("Go go Login without password!!")
-						browser.execute_script('window.open("")')
-						time.sleep(3)
 				except:
 					print('Aneh nih')
 					pass
 					
 				# Select Wifi1 or Wifi2
-				getchannel = browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[1]/div[1]/fieldset/table/tbody/tr[3]/td[2]')
-				wifi1btn = browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[1]/div[1]/fieldset/table/tbody/tr[3]/td[7]/a[1]/img')
-				wifi2btn = browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[1]/div[2]/fieldset/table/tbody/tr[3]/td[7]/a[1]/img ')
+				# getchannel = browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[1]/div[1]/fieldset/table/tbody/tr[3]/td[2]')
+				getchannel = browser.find_element(By.XPATH, "//tr[3]/td[2]")
+				
+				print('Lewat Sini')
 
 				if getchannel == 6:
+					wifi2btn = browser.find_element(By.XPATH,"//*[contains(@href, 'wireless_edit/radio1')]")
 					wifi2btn.click()
 					time.sleep(3)
 					print("Open Wifi 2")
-				else: 
+				else:
+					wifi1btn = browser.find_element(By.XPATH,"//*[contains(@href, 'wireless_edit/radio0')]")
 					wifi1btn.click()
 					time.sleep(3)
 					print("Open Wifi 1")
 
 				# Get channel from Device Config and essid from Interface Config
 				print("coba get channel config")
-				# getchannelconfig = Select(browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[2]/fieldset[1]/div/div[2]/div[5]/div/select'))
+				getchannelconfig = Select(browser.find_element(By.NAME,'cbid.wireless.radio0.channel_24'))
 				
 				print("udah get channel config")
 				getessid = browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[2]/fieldset[2]/div/div[1]/div[3]/div/div/table/tbody/tr/td/input')
@@ -131,41 +140,42 @@ def main():
 				
 				print("udah buka advanced setting")
 
-				# getbridging = browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[2]/fieldset[2]/div/div[4]/div[1]/div/select/')
+				getbridging = Select(browser.find_element(By.ID,'cbid.wireless.radio0w0.bridge_mode'))
 				# getclonedmac = browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[2]/fieldset[2]/div/div[4]/div[3]/div/div[1]/table/tbody/tr/td/input')
 				
-				print("udah buka advanced setting")
+				print(getbridging.first_selected_option.text)
+				print(getbridging.first_selected_option.get_attribute('value'))
 				
-				try:
-					if len(browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[2]/fieldset[2]/div/div[4]/div[3]/div/div[1]/table/tbody/tr/td/input')) > 0:
-						iscloning = 0;
-						maccloning.append(browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[2]/fieldset[2]/div/div[4]/div[3]/div/div[1]/table/tbody/tr/td/input'))
-					else: 
-						iscloning = 1;
-				except:
-					print('Aneh lagi nih')
-					pass
+				if browser.find_element(By.ID,'cbid.wireless.radio0w0.clone_mac'):
+					print('clone mac masuk')
+					iscloning = "0"
+					print('is cloning')
+					getmaccloning = browser.find_element(By.ID,'cbid.wireless.radio0w0.clone_mac')
+					print('dapet mac')
+					maccloning = getmaccloning.get_attribute('value')
+					print('dapet mac value')
+				else: 
+					iscloning = "1"
+					maccloning = ""
 				
 				# Go to Roaming tab
-				roamtab  = browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[2]/fieldset[2]/ul/li[5]/a')
+				roamtab  = browser.find_element(By.ID,'tab.wireless.radio0w0.roaming')
 				roamtab.click()
 
-				# getchannelroam = browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[2]/fieldset[2]/div/div[8]/div[3]/div/select/')
-				getdelay = browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[2]/fieldset[2]/div/div[8]/div[4]/div/div[1]/table/tbody/tr/td/input')
-				getleavethres = browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[2]/fieldset[2]/div/div[8]/div[5]/div/div[1]/table/tbody/tr/td/input')
-				getscanthres = browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[2]/fieldset[2]/div/div[8]/div[7]/div/div[1]/table/tbody/tr/td/input')
-				getminsignal = browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[2]/fieldset[2]/div/div[8]/div[8]/div/div[1]/table/tbody/tr/td/input')
+				getchannelroam = Select(browser.find_element(By.ID,'cbid.wireless.radio0w0.scan_freq'))
+				getdelay = browser.find_element(By.ID,'cbid.wireless.radio0w0.scan_interval')
+				getleavethres = browser.find_element(By.ID,'cbid.wireless.radio0w0.leave_threshold')
+				getscanthres = browser.find_element(By.ID,'cbid.wireless.radio0w0.scan_threshold')
+				getminsignal = browser.find_element(By.ID,'cbid.wireless.radio0w0.roam_min_level')
 				
 				print('Capeeee')
 
 				# Input data from element to variable
-
-				# channelconfig.append(getchannelconfig.text)
-				print(getessid.get_attribute('value'))
+				channelconfig = getchannelconfig.first_selected_option.get_attribute('value')
 				essid = getessid.get_attribute('value')
-				print('Capeeee #2')
-				# bridging.append(getbridging.text)
-				# channelroam.append(getchannelroam.text)
+				print(getbridging.first_selected_option.get_attribute('value'))
+				bridging = getbridging.first_selected_option.get_attribute('value')
+				channelroam = getchannelroam.first_selected_option.get_attribute('value')
 				delay = getdelay.get_attribute('value')
 				leavethreshold = getleavethres.get_attribute('value')
 				scanthreshold = getscanthres.get_attribute('value')
@@ -174,7 +184,7 @@ def main():
 				print('Get Data ORU')
 				
 				# Insert data to DB
-				updatedetailORU('', essid, '', '', '', '', delay, leavethreshold, scanthreshold, minsignal)
+				updatedetailORU(channelconfig, essid, bridging, maccloning, iscloning, channelroam, delay, leavethreshold, scanthreshold, minsignal)
 		except:
 			print('Data Unavailable')
 
