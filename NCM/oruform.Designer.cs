@@ -51,6 +51,7 @@
             Margin = new Padding(2);
             Name = "oruform";
             Text = "ORU Management";
+            Shown += oruform_Shown;
             ((System.ComponentModel.ISupportInitialize)dgv_oru).EndInit();
             ResumeLayout(false);
         }

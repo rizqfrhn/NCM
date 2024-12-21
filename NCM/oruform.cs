@@ -24,15 +24,27 @@ namespace NCM
     public partial class oruform : Form
     {
         private System.Windows.Forms.Timer scanscheduler;
-        string getdataoru = "C:\\Users\\TRAKINDO\\source\\repos\\NCM\\py\\getdataoru.py";
-        
+        string getdataoru = ConfigurationManager.AppSettings["getdataoru"];
+        // string getdataoru = "C:\\Users\\TRAKINDO\\source\\repos\\NCM\\py\\getdataoru.py";
+
         public oruform()
         {
-            Task.Run(() => StartScanAsyncORU());
-            LoadData();
+            // Initialize the timer and other components before starting async task
             InitTimer();
             InitializeComponent();
+
+            // Ensure async scan task starts after initialization
+            Task.Run(() => StartScanAsyncORU());
         }
+
+        private void oruform_Shown(object sender, EventArgs e)
+        {
+            LoadData();
+
+            // Add CellDoubleClick event handler
+            dgv_oru.CellDoubleClick += dgv_oru_CellDoubleClick;
+        }
+
         public void InitTimer()
         {
             scanscheduler = new System.Windows.Forms.Timer();
@@ -53,19 +65,20 @@ namespace NCM
         static async Task GetDataORU(string[] args)
         {
 
-            ProcessStartInfo start = new ProcessStartInfo(){
-            FileName = "C:\\Users\\TRAKINDO\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
-            // Console.Write(args.Length);
-            // arg[0] = Path to your python script (example : "C:\\add_them.py")
-            // arg[1] = first arguement taken from  C#'s main method's args variable (here i'm passing a number : 5)
-            // arg[2] = second arguement taken from  C#'s main method's args variable ( here i'm passing a number : 6)
-            // pass these to your Arguements property of your ProcessStartInfo instance
+            ProcessStartInfo start = new ProcessStartInfo()
+            {
+                FileName = ConfigurationManager.AppSettings["python"],
+                // Console.Write(args.Length);
+                // arg[0] = Path to your python script (example : "C:\\add_them.py")
+                // arg[1] = first arguement taken from  C#'s main method's args variable (here i'm passing a number : 5)
+                // arg[2] = second arguement taken from  C#'s main method's args variable ( here i'm passing a number : 6)
+                // pass these to your Arguements property of your ProcessStartInfo instance
 
-            Arguments = string.Format("{0} {1} {2} {3}", args[0], args[1], args[2], args[3]),
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true, // Redirect errors
-            CreateNoWindow = true // Don't create a new window
+                Arguments = string.Format("{0} {1} {2} {3}", args[0], args[1], args[2], args[3]),
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true, // Redirect errors
+                CreateNoWindow = true // Don't create a new window
             };
 
             try
@@ -74,7 +87,7 @@ namespace NCM
                 {
                     process.StartInfo = start;
                     process.Start();
-                    
+
                     // Asynchronously read output and error streams to avoid blocking
                     Task outputTask = Task.Run(() =>
                     {
@@ -205,34 +218,31 @@ namespace NCM
         {
             using (SQLiteConnection conn = new SQLiteConnection(ConfigurationManager.ConnectionStrings["Key"].ConnectionString))
             {
-                conn.Open();
                 try
                 {
-                    SQLiteCommand cmd = new SQLiteCommand("select * from tb_oru order by no_loader", conn);
-                    using (SQLiteDataReader read = cmd.ExecuteReader())
+                    conn.Open();  // Ensure connection is open
+                    SQLiteDataAdapter cmd = new SQLiteDataAdapter("SELECT no_loader, ip_oru ,mac, channel, essid, bridging, delay, leave_threshold, scan_threshold, min_signal FROM tb_oru ORDER BY no_loader", conn);
+                    DataTable dt = new DataTable();
+                    dt.Clear();
+                    cmd.Fill(dt);
+
+                    if (dt != null && dt.Rows.Count > 0)
                     {
-                        while (read.Read())
-                        {
-                            dgv_oru.Rows.Add(new object[] {
-                                read.GetValue(read.GetOrdinal("no_loader")),  // Or column name like this
-                                read.GetValue(read.GetOrdinal("mac")),
-                                read.GetValue(read.GetOrdinal("channel")),
-                                read.GetValue(read.GetOrdinal("essid")),
-                                read.GetValue(read.GetOrdinal("bridging")),
-                                read.GetValue(read.GetOrdinal("delay")),
-                                read.GetValue(read.GetOrdinal("leave_threshold")),
-                                read.GetValue(read.GetOrdinal("scan_threshold")),
-                                read.GetValue(read.GetOrdinal("min_signal"))
-                            });
-                        }
+                        dgv_oru.DataSource = dt;
+                        dgv_oru.Refresh();  // Refresh the DataGridView
+
+                        // Make the DataGridView non-editable
+                        dgv_oru.ReadOnly = true;
+                    }
+                    else
+                    {
+                        MessageBox.Show("No data found.");
                     }
                 }
                 catch (Exception ex)
                 {
-                    // write exception info to log or anything else
-                    MessageBox.Show("Error loading data: " + ex.Message);
+                    MessageBox.Show("Database error: " + ex.Message);
                 }
-                conn.Close();
             }
         }
 
@@ -288,6 +298,36 @@ namespace NCM
             {
                 return false; // If there is a PingException, we consider the IP unreachable
             }
+        }
+
+        private void dgv_oru_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            // Ensure the user clicked on a valid row
+            if (e.RowIndex >= 0)
+            {
+                // Extract data from the selected row
+                string noLoader = dgv_oru.Rows[e.RowIndex].Cells["no_loader"].Value.ToString();
+                string iporu = dgv_oru.Rows[e.RowIndex].Cells["ip_oru"].Value.ToString();
+                string mac = dgv_oru.Rows[e.RowIndex].Cells["mac"].Value.ToString();
+                string channel = dgv_oru.Rows[e.RowIndex].Cells["channel"].Value.ToString();
+                string essid = dgv_oru.Rows[e.RowIndex].Cells["essid"].Value.ToString();
+                string bridging = dgv_oru.Rows[e.RowIndex].Cells["bridging"].Value.ToString();
+                int delay = Convert.ToInt32(dgv_oru.Rows[e.RowIndex].Cells["delay"].Value);
+                int leave = Convert.ToInt32(dgv_oru.Rows[e.RowIndex].Cells["leave_threshold"].Value);
+                int scan = Convert.ToInt32(dgv_oru.Rows[e.RowIndex].Cells["scan_threshold"].Value);
+                int signal = Convert.ToInt32(dgv_oru.Rows[e.RowIndex].Cells["min_signal"].Value);
+
+                // Open the new form and pass the data
+                EditOru(noLoader, iporu, mac, channel, essid, bridging, delay, leave, scan, signal);
+            }
+        }
+
+        private void EditOru(string noLoader, string iporu, string mac, string channel, string essid,
+            string bridging, int delay, int leave, int scan, int signal)
+        {
+            // Create and show the new form (not as a dialog)
+            editoruform EditForm = new editoruform(noLoader, iporu, mac, channel, essid, bridging, delay, leave, scan, signal);
+            EditForm.Show(); // Open the form independently
         }
     }
 }
