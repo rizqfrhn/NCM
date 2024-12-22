@@ -18,6 +18,9 @@ using System.Net.NetworkInformation;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Buffers.Text;
+using static System.ComponentModel.Design.ObjectSelectorEditor;
+using System.Security.Cryptography;
+using System.Threading.Channels;
 
 namespace NCM
 {
@@ -49,7 +52,7 @@ namespace NCM
         {
             scanscheduler = new System.Windows.Forms.Timer();
             scanscheduler.Tick += new EventHandler(scanscheduler_Tick);
-            scanscheduler.Interval = 300000; // in miliseconds
+            scanscheduler.Interval = 500000; // in miliseconds
             scanscheduler.Start();
         }
 
@@ -167,6 +170,10 @@ namespace NCM
                         InsertIpORU(loaderip, nolhd, macORU);
                         await GetDataORU([getdataoru, loaderip, nolhd, macORU]);
                         Console.WriteLine($"Inserted IP: {loaderip}, MAC Address: {macORU}");
+                        Invoke((Action)(() =>
+                        {
+                            LoadData();
+                        }));
                     }
                     else
                     {
@@ -221,7 +228,7 @@ namespace NCM
                 try
                 {
                     conn.Open();  // Ensure connection is open
-                    SQLiteDataAdapter cmd = new SQLiteDataAdapter("SELECT no_loader, ip_oru ,mac, channel, essid, bridging, delay, leave_threshold, scan_threshold, min_signal FROM tb_oru ORDER BY no_loader", conn);
+                    SQLiteDataAdapter cmd = new SQLiteDataAdapter("SELECT no_loader, ip_oru, mac, channel, tb_channelroam.desc as channelroam, essid, tb_bridging.desc as bridging, delay, leave_threshold, scan_threshold, min_signal FROM tb_oru left JOIN tb_channelroam ON tb_oru.channelroam = tb_channelroam.id_channelroam left JOIN tb_bridging ON tb_oru.bridging = tb_bridging.id_bridging ORDER BY no_loader", conn);
                     DataTable dt = new DataTable();
                     dt.Clear();
                     cmd.Fill(dt);
@@ -229,6 +236,7 @@ namespace NCM
                     if (dt != null && dt.Rows.Count > 0)
                     {
                         dgv_oru.DataSource = dt;
+                        dgv_oru.Columns["channelroam"].Visible = false;
                         dgv_oru.Refresh();  // Refresh the DataGridView
 
                         // Make the DataGridView non-editable
@@ -236,8 +244,9 @@ namespace NCM
                     }
                     else
                     {
-                        MessageBox.Show("No data found.");
+                        MessageBox.Show("No Data Found, Scanning ORU On Progress!");
                     }
+                    conn.Close();
                 }
                 catch (Exception ex)
                 {
@@ -305,28 +314,38 @@ namespace NCM
             // Ensure the user clicked on a valid row
             if (e.RowIndex >= 0)
             {
-                // Extract data from the selected row
-                string noLoader = dgv_oru.Rows[e.RowIndex].Cells["no_loader"].Value.ToString();
-                string iporu = dgv_oru.Rows[e.RowIndex].Cells["ip_oru"].Value.ToString();
-                string mac = dgv_oru.Rows[e.RowIndex].Cells["mac"].Value.ToString();
-                string channel = dgv_oru.Rows[e.RowIndex].Cells["channel"].Value.ToString();
-                string essid = dgv_oru.Rows[e.RowIndex].Cells["essid"].Value.ToString();
-                string bridging = dgv_oru.Rows[e.RowIndex].Cells["bridging"].Value.ToString();
-                int delay = Convert.ToInt32(dgv_oru.Rows[e.RowIndex].Cells["delay"].Value);
-                int leave = Convert.ToInt32(dgv_oru.Rows[e.RowIndex].Cells["leave_threshold"].Value);
-                int scan = Convert.ToInt32(dgv_oru.Rows[e.RowIndex].Cells["scan_threshold"].Value);
-                int signal = Convert.ToInt32(dgv_oru.Rows[e.RowIndex].Cells["min_signal"].Value);
+                if (dgv_oru.Rows[e.RowIndex].Cells["channel"].Value != DBNull.Value && dgv_oru.Rows[e.RowIndex].Cells["channelroam"].Value != DBNull.Value &&
+                    dgv_oru.Rows[e.RowIndex].Cells["essid"].Value != DBNull.Value && dgv_oru.Rows[e.RowIndex].Cells["bridging"].Value != DBNull.Value &&
+                    dgv_oru.Rows[e.RowIndex].Cells["delay"].Value != DBNull.Value && dgv_oru.Rows[e.RowIndex].Cells["leave_threshold"].Value != DBNull.Value)
+                {
+                    // Extract data from the selected row
+                    string noLoader = dgv_oru.Rows[e.RowIndex].Cells["no_loader"].Value.ToString();
+                    string iporu = dgv_oru.Rows[e.RowIndex].Cells["ip_oru"].Value.ToString();
+                    string mac = dgv_oru.Rows[e.RowIndex].Cells["mac"].Value.ToString();
+                    string channel = dgv_oru.Rows[e.RowIndex].Cells["channel"].Value.ToString();
+                    string channelroam = dgv_oru.Rows[e.RowIndex].Cells["channelroam"].Value.ToString();
+                    string essid = dgv_oru.Rows[e.RowIndex].Cells["essid"].Value.ToString();
+                    string bridging = dgv_oru.Rows[e.RowIndex].Cells["bridging"].Value.ToString();
+                    int delay = Convert.ToInt32(dgv_oru.Rows[e.RowIndex].Cells["delay"].Value) == null ? 0 : Convert.ToInt32(dgv_oru.Rows[e.RowIndex].Cells["delay"].Value);
+                    int leave = Convert.ToInt32(dgv_oru.Rows[e.RowIndex].Cells["leave_threshold"].Value) == null ? 0 : Convert.ToInt32(dgv_oru.Rows[e.RowIndex].Cells["leave_threshold"].Value);
+                    int scan = Convert.ToInt32(dgv_oru.Rows[e.RowIndex].Cells["scan_threshold"].Value) == null ? 0 : Convert.ToInt32(dgv_oru.Rows[e.RowIndex].Cells["scan_threshold"].Value);
+                    int signal = Convert.ToInt32(dgv_oru.Rows[e.RowIndex].Cells["min_signal"].Value) == null ? 0 : Convert.ToInt32(dgv_oru.Rows[e.RowIndex].Cells["min_signal"].Value);
 
-                // Open the new form and pass the data
-                EditOru(noLoader, iporu, mac, channel, essid, bridging, delay, leave, scan, signal);
+                    // Open the new form and pass the data
+                    EditOru(iporu, noLoader, mac, channel, channelroam, essid, bridging, delay, leave, scan, signal);
+                }
+                else
+                {
+                    MessageBox.Show("Loader Still Offline!");
+                }
             }
         }
 
-        private void EditOru(string noLoader, string iporu, string mac, string channel, string essid,
+        private void EditOru(string iporu, string noLoader, string mac, string channel, string channelroam, string essid,
             string bridging, int delay, int leave, int scan, int signal)
         {
             // Create and show the new form (not as a dialog)
-            editoruform EditForm = new editoruform(noLoader, iporu, mac, channel, essid, bridging, delay, leave, scan, signal);
+            editoruform EditForm = new editoruform(iporu, noLoader, mac, channel, channelroam, essid, bridging, delay, leave, scan, signal);
             EditForm.Show(); // Open the form independently
         }
     }

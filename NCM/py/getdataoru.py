@@ -110,82 +110,153 @@ def main():
 					
 				# Select Wifi1 or Wifi2
 				# getchannel = browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[1]/div[1]/fieldset/table/tbody/tr[3]/td[2]')
-				getchannel = browser.find_element(By.XPATH, "//tr[3]/td[2]")
+				getchannel = browser.find_element(By.XPATH, "//div[1]/fieldset/table/tbody/tr[3]/td[2]")
 				
-				print('Lewat Sini')
+				print(getchannel.text)
 
-				if getchannel == 6:
+				if int(getchannel.text) == 6:
 					wifi2btn = browser.find_element(By.XPATH,"//*[contains(@href, 'wireless_edit/radio1')]")
 					wifi2btn.click()
 					time.sleep(3)
 					print("Open Wifi 2")
+					
+					# Get channel from Device Config and essid from Interface Config
+					print("coba get channel config")
+					getchannelconfig = Select(browser.find_element(By.NAME,'cbid.wireless.radio1.channel_24'))
+					
+					print("udah get channel config")
+					getessid = browser.find_element(By.NAME,'cbid.wireless.radio1w0.ssid')
+					
+					print("udah dapet essid nih")
+					
+					# Go to Advanced Settings tab on Interface Config
+					adsettab  = browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[2]/fieldset[2]/ul/li[3]/a')
+					adsettab.click()
+					
+					print("udah buka advanced setting")
+
+					getbridging = Select(browser.find_element(By.ID,'cbid.wireless.radio1w0.bridge_mode'))
+					# getclonedmac = browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[2]/fieldset[2]/div/div[4]/div[3]/div/div[1]/table/tbody/tr/td/input')
+					
+					print(getbridging.first_selected_option.text)
+					print(getbridging.first_selected_option.get_attribute('value'))
+					
+					if getbridging.first_selected_option.get_attribute('value') == '125nat':
+						if browser.find_element(By.ID,'cbid.wireless.radio1w0.clone_mac'):
+							print('clone mac masuk')
+							iscloning = "0"
+							print('is cloning')
+							getmaccloning = browser.find_element(By.ID,'cbid.wireless.radio1w0.clone_mac')
+							print('dapet mac')
+							maccloning = getmaccloning.get_attribute('value')
+							print('dapet mac value')
+						else: 
+							iscloning = "1"
+							maccloning = ""
+					else:
+						iscloning = ""
+						maccloning = ""
+					
+					# Go to Roaming tab
+					roamtab  = browser.find_element(By.ID,'tab.wireless.radio1w0.roaming')
+					roamtab.click()
+
+					getchannelroam = Select(browser.find_element(By.ID,'cbid.wireless.radio1w0.scan_freq'))
+					getdelay = browser.find_element(By.ID,'cbid.wireless.radio1w0.scan_interval')
+					getleavethres = browser.find_element(By.ID,'cbid.wireless.radio1w0.leave_threshold')
+					getscanthres = browser.find_element(By.ID,'cbid.wireless.radio1w0.scan_threshold')
+					getminsignal = browser.find_element(By.ID,'cbid.wireless.radio1w0.roam_min_level')
+					
+					print('Capeeee')
+
+					# Input data from element to variable
+					channelconfig = getchannelconfig.first_selected_option.get_attribute('value')
+					essid = getessid.get_attribute('value')
+					print(getbridging.first_selected_option.get_attribute('value'))
+					bridging = getbridging.first_selected_option.get_attribute('value')
+					channelroam = getchannelroam.first_selected_option.get_attribute('value')
+					delay = getdelay.get_attribute('value')
+					leavethreshold = getleavethres.get_attribute('value')
+					scanthreshold = getscanthres.get_attribute('value')
+					minsignal = getminsignal.get_attribute('value')
+					
+					print('Get Data ORU')
+					
+					# Insert data to DB
+					updatedetailORU(channelconfig, essid, bridging, maccloning, iscloning, channelroam, delay, leavethreshold, scanthreshold, minsignal)
+					browser.close()
+
 				else:
 					wifi1btn = browser.find_element(By.XPATH,"//*[contains(@href, 'wireless_edit/radio0')]")
 					wifi1btn.click()
 					time.sleep(3)
 					print("Open Wifi 1")
 
-				# Get channel from Device Config and essid from Interface Config
-				print("coba get channel config")
-				getchannelconfig = Select(browser.find_element(By.NAME,'cbid.wireless.radio0.channel_24'))
-				
-				print("udah get channel config")
-				getessid = browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[2]/fieldset[2]/div/div[1]/div[3]/div/div/table/tbody/tr/td/input')
-				
-				print("udah dapet essid nih")
-				
-				# Go to Advanced Settings tab on Interface Config
-				adsettab  = browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[2]/fieldset[2]/ul/li[3]/a')
-				adsettab.click()
-				
-				print("udah buka advanced setting")
+					# Get channel from Device Config and essid from Interface Config
+					print("coba get channel config")
+					getchannelconfig = Select(browser.find_element(By.NAME,'cbid.wireless.radio0.channel_24'))
+					
+					print("udah get channel config")
+					getessid = browser.find_element(By.NAME,'cbid.wireless.radio0w0.ssid')
+					
+					print("udah dapet essid nih")
+					
+					# Go to Advanced Settings tab on Interface Config
+					adsettab  = browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[2]/fieldset[2]/ul/li[3]/a')
+					adsettab.click()
+					
+					print("udah buka advanced setting")
 
-				getbridging = Select(browser.find_element(By.ID,'cbid.wireless.radio0w0.bridge_mode'))
-				# getclonedmac = browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[2]/fieldset[2]/div/div[4]/div[3]/div/div[1]/table/tbody/tr/td/input')
-				
-				print(getbridging.first_selected_option.text)
-				print(getbridging.first_selected_option.get_attribute('value'))
-				
-				if browser.find_element(By.ID,'cbid.wireless.radio0w0.clone_mac'):
-					print('clone mac masuk')
-					iscloning = "0"
-					print('is cloning')
-					getmaccloning = browser.find_element(By.ID,'cbid.wireless.radio0w0.clone_mac')
-					print('dapet mac')
-					maccloning = getmaccloning.get_attribute('value')
-					print('dapet mac value')
-				else: 
-					iscloning = "1"
-					maccloning = ""
-				
-				# Go to Roaming tab
-				roamtab  = browser.find_element(By.ID,'tab.wireless.radio0w0.roaming')
-				roamtab.click()
+					getbridging = Select(browser.find_element(By.ID,'cbid.wireless.radio0w0.bridge_mode'))
+					# getclonedmac = browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[2]/fieldset[2]/div/div[4]/div[3]/div/div[1]/table/tbody/tr/td/input')
+					
+					print(getbridging.first_selected_option.text)
+					print(getbridging.first_selected_option.get_attribute('value'))
+					
+					if getbridging.first_selected_option.get_attribute('value') == '125nat':
+						if browser.find_element(By.ID,'cbid.wireless.radio0w0.clone_mac'):
+							print('clone mac masuk')
+							iscloning = "0"
+							print('is cloning')
+							getmaccloning = browser.find_element(By.ID,'cbid.wireless.radio0w0.clone_mac')
+							print('dapet mac')
+							maccloning = getmaccloning.get_attribute('value')
+							print('dapet mac value')
+						else: 
+							iscloning = "1"
+							maccloning = ""
+					else:
+						iscloning = ""
+						maccloning = ""
+					
+					# Go to Roaming tab
+					roamtab  = browser.find_element(By.ID,'tab.wireless.radio0w0.roaming')
+					roamtab.click()
 
-				getchannelroam = Select(browser.find_element(By.ID,'cbid.wireless.radio0w0.scan_freq'))
-				getdelay = browser.find_element(By.ID,'cbid.wireless.radio0w0.scan_interval')
-				getleavethres = browser.find_element(By.ID,'cbid.wireless.radio0w0.leave_threshold')
-				getscanthres = browser.find_element(By.ID,'cbid.wireless.radio0w0.scan_threshold')
-				getminsignal = browser.find_element(By.ID,'cbid.wireless.radio0w0.roam_min_level')
-				
-				print('Capeeee')
+					getchannelroam = Select(browser.find_element(By.ID,'cbid.wireless.radio0w0.scan_freq'))
+					getdelay = browser.find_element(By.ID,'cbid.wireless.radio0w0.scan_interval')
+					getleavethres = browser.find_element(By.ID,'cbid.wireless.radio0w0.leave_threshold')
+					getscanthres = browser.find_element(By.ID,'cbid.wireless.radio0w0.scan_threshold')
+					getminsignal = browser.find_element(By.ID,'cbid.wireless.radio0w0.roam_min_level')
+					
+					print('Capeeee')
 
-				# Input data from element to variable
-				channelconfig = getchannelconfig.first_selected_option.get_attribute('value')
-				essid = getessid.get_attribute('value')
-				print(getbridging.first_selected_option.get_attribute('value'))
-				bridging = getbridging.first_selected_option.get_attribute('value')
-				channelroam = getchannelroam.first_selected_option.get_attribute('value')
-				delay = getdelay.get_attribute('value')
-				leavethreshold = getleavethres.get_attribute('value')
-				scanthreshold = getscanthres.get_attribute('value')
-				minsignal = getminsignal.get_attribute('value')
-				
-				print('Get Data ORU')
-				
-				# Insert data to DB
-				updatedetailORU(channelconfig, essid, bridging, maccloning, iscloning, channelroam, delay, leavethreshold, scanthreshold, minsignal)
-				browser.close()
+					# Input data from element to variable
+					channelconfig = getchannelconfig.first_selected_option.get_attribute('value')
+					essid = getessid.get_attribute('value')
+					print(getbridging.first_selected_option.get_attribute('value'))
+					bridging = getbridging.first_selected_option.get_attribute('value')
+					channelroam = getchannelroam.first_selected_option.get_attribute('value')
+					delay = getdelay.get_attribute('value')
+					leavethreshold = getleavethres.get_attribute('value')
+					scanthreshold = getscanthres.get_attribute('value')
+					minsignal = getminsignal.get_attribute('value')
+					
+					print('Get Data ORU')
+					
+					# Insert data to DB
+					updatedetailORU(channelconfig, essid, bridging, maccloning, iscloning, channelroam, delay, leavethreshold, scanthreshold, minsignal)
+					browser.close()
 		except:
 			print('Data Unavailable')
 

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\TRAKINDO\\source\\repos\\NCM\\NCM.csproj": {}
+    "c:\\Users\\TRAKINDO\\source\\repos\\NCM\\NCM.csproj": {}
   },
   "projects": {
-    "C:\\Users\\TRAKINDO\\source\\repos\\NCM\\NCM.csproj": {
+    "c:\\Users\\TRAKINDO\\source\\repos\\NCM\\NCM.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\TRAKINDO\\source\\repos\\NCM\\NCM.csproj",
+        "projectUniqueName": "c:\\Users\\TRAKINDO\\source\\repos\\NCM\\NCM.csproj",
         "projectName": "NCM",
-        "projectPath": "C:\\Users\\TRAKINDO\\source\\repos\\NCM\\NCM.csproj",
+        "projectPath": "c:\\Users\\TRAKINDO\\source\\repos\\NCM\\NCM.csproj",
         "packagesPath": "C:\\Users\\TRAKINDO\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\TRAKINDO\\source\\repos\\NCM\\obj\\",
+        "outputPath": "c:\\Users\\TRAKINDO\\source\\repos\\NCM\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -90,7 +90,7 @@
               "privateAssets": "none"
             }
           },
-          "runtimeIdentifierGraphPath": "c:\\program files\\dotnet\\sdk\\9.0.100/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.100/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

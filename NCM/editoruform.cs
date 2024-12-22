@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
 using System.Data;
+using System.Data.SQLite;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
@@ -15,8 +16,8 @@ namespace NCM
 {
     public partial class editoruform : Form
     {
-        string IPORU, noLHD, Mac, Channel, ESSID, Bridging, Delay, Leave, Scan, Signal;
-        public editoruform(string noLoader, string iporu, string mac, string channel, string essid,
+        string IPORU, noLHD, Mac, Channel, ChannelRoam, ESSID, Bridging, Delay, Leave, Scan, Signal;
+        public editoruform(string iporu, string noLoader, string mac, string channel, string channelroam, string essid,
             string bridging, int delay, int leave, int scan, int signal)
         {
             InitializeComponent();
@@ -25,34 +26,93 @@ namespace NCM
             IPORU = iporu;
             tbnoloader.Text = noLHD = noLoader;
             tbmac.Text = Mac = mac;
-            tbchannel.Text = Channel = channel;
+            Channel = channel;
+            ChannelRoam = channelroam;
             tbessid.Text = ESSID = essid;
-            tbbridging.Text = Bridging = bridging;
+            Bridging = bridging;
             tbdelay.Text = Delay = delay.ToString();
             tbleave.Text = Leave = leave.ToString();
             tbscan.Text = Scan = scan.ToString();
             tbsignal.Text = Signal = signal.ToString();
+            
+            cbbridging.Items.Clear();
+            cbbridging.DataSource = null;
+            cbchannel.Items.Clear();
+            cbchannel.DataSource = null;
+
+            LoadCB();
+        }
+
+        public void LoadCB()
+        {
+            using (SQLiteConnection conn = new SQLiteConnection(ConfigurationManager.ConnectionStrings["Key"].ConnectionString))
+            {
+                conn.Open();
+                try
+                {
+                    DataTable dtroam = new DataTable();
+                    SQLiteDataAdapter daroam = new SQLiteDataAdapter("select id_channelroam, desc from tb_channelroam", conn);
+                    dtroam = new DataTable();
+                    dtroam.Clear();
+                    daroam.Fill(dtroam);
+
+                    //DataRow selectroam = dtroam.NewRow();
+                    //selectroam[1] = "Select Channel";
+                    //dtroam.Rows.InsertAt(selectroam, 0);
+
+                    cbchannel.DisplayMember = "desc";
+                    cbchannel.ValueMember = "desc";
+                    cbchannel.DataSource = dtroam;
+
+                    cbchannel.Refresh();
+                    cbchannel.SelectedValue = ChannelRoam;
+
+                    DataTable dtbridging = new DataTable();
+                    SQLiteDataAdapter dabridging = new SQLiteDataAdapter("select id_bridging, desc from tb_bridging", conn);
+                    dtbridging = new DataTable();
+                    dtbridging.Clear();
+                    dabridging.Fill(dtbridging);
+
+                    //DataRow select = dtbridging.NewRow();
+                    //select[1] = "Select Bridging Mode";
+                    //dtbridging.Rows.InsertAt(select, 0);
+
+                    cbbridging.DisplayMember = "desc";
+                    cbbridging.ValueMember = "desc";
+                    cbbridging.DataSource = dtbridging;
+
+                    cbbridging.Refresh();
+                    cbbridging.SelectedValue = Bridging;
+                }
+                catch (Exception ex)
+                {
+                    // write exception info to log or anything else
+                    MessageBox.Show("Error loading data: " + ex.Message);
+                }
+                conn.Close();
+            }
         }
 
         private void btnsave_Click(object sender, EventArgs e)
         {
             // Check if all TextBoxes are filled
-            if (IsAnyTextBoxEmpty())
-            {
-                // Notify the user that all TextBoxes need to be filled
-                MessageBox.Show("Please fill in all the fields before saving.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-            else
-            {
-                // Ensure async scan task starts after initialization
-                Task.Run(() => AsyncSetDataORU());
-            }
+            // if (IsAnyTextBoxEmpty())
+            // {
+            //     // Notify the user that all TextBoxes need to be filled
+            //     MessageBox.Show("Please fill in all the fields before saving.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            // }
+            // else
+            // {
+            //     // Ensure async scan task starts after initialization
+            //     Task.Run(() => AsyncSetDataORU());
+            // }
+            Task.Run(() => AsyncSetDataORU());
         }
 
         private async Task AsyncSetDataORU()
         {
-            await SetDataORU([ConfigurationManager.AppSettings["setdataoru"], IPORU, noLHD, Mac, tbchannel.Text, tbessid.Text
-                , tbbridging.Text, tbdelay.Text, tbleave.Text, tbscan.Text, tbsignal.Text]);
+            await SetDataORU([ConfigurationManager.AppSettings["setdataoru"], IPORU, noLHD, Mac, (cbchannel.Text == "1 (2.412 GHz)") ? "1" : "11", cbchannel.Text, tbessid.Text
+                , cbbridging.Text, tbdelay.Text, tbleave.Text, tbscan.Text, tbsignal.Text]);
         }
 
         static async Task SetDataORU(string[] args)
@@ -61,7 +121,7 @@ namespace NCM
             ProcessStartInfo start = new ProcessStartInfo()
             {
                 FileName = ConfigurationManager.AppSettings["python"],
-                Arguments = string.Format("{0} {1} {2} {3}", args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10]),
+                Arguments = string.Format("{0} {1} {2} {3}", args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11]),
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true, // Redirect errors
@@ -116,16 +176,12 @@ namespace NCM
         }
 
         // Method to check if any TextBox is empty
-        private bool IsAnyTextBoxEmpty()
-        {
-            // Check each TextBox to see if it's empty or contains only whitespace
-            return string.IsNullOrWhiteSpace(tbchannel.Text) ||
-                   string.IsNullOrWhiteSpace(tbessid.Text) ||
-                   string.IsNullOrWhiteSpace(tbbridging.Text) ||
-                   string.IsNullOrWhiteSpace(tbdelay.Text) ||
-                   string.IsNullOrWhiteSpace(tbleave.Text) ||
-                   string.IsNullOrWhiteSpace(tbscan.Text) ||
-                   string.IsNullOrWhiteSpace(tbsignal.Text);
-        }
+        // private bool IsAnyTextBoxEmpty()
+        // {
+        //     // Check each TextBox to see if it's empty or contains only whitespace
+        //     return tbessid.Text == "" || tbdelay.Text == "" ||
+        //            tbleave.Text == "" || tbscan.Text == "" ||
+        //            tbsignal.Text == "";
+        // }
     }
 }

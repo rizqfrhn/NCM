@@ -38,8 +38,6 @@
             label8 = new Label();
             tbnoloader = new TextBox();
             tbmac = new TextBox();
-            tbchannel = new TextBox();
-            tbbridging = new TextBox();
             tbdelay = new TextBox();
             tbleave = new TextBox();
             tbscan = new TextBox();
@@ -48,6 +46,8 @@
             btnclose = new Button();
             tbessid = new TextBox();
             label9 = new Label();
+            cbchannel = new ComboBox();
+            cbbridging = new ComboBox();
             SuspendLayout();
             // 
             // label1
@@ -138,20 +138,6 @@
             tbmac.Size = new Size(147, 23);
             tbmac.TabIndex = 1;
             // 
-            // tbchannel
-            // 
-            tbchannel.Location = new Point(144, 64);
-            tbchannel.Name = "tbchannel";
-            tbchannel.Size = new Size(147, 23);
-            tbchannel.TabIndex = 2;
-            // 
-            // tbbridging
-            // 
-            tbbridging.Location = new Point(144, 122);
-            tbbridging.Name = "tbbridging";
-            tbbridging.Size = new Size(147, 23);
-            tbbridging.TabIndex = 4;
-            // 
             // tbdelay
             // 
             tbdelay.Location = new Point(144, 151);
@@ -216,11 +202,29 @@
             label9.TabIndex = 11;
             label9.Text = "ESSID";
             // 
+            // cbchannel
+            // 
+            cbchannel.FormattingEnabled = true;
+            cbchannel.Location = new Point(144, 64);
+            cbchannel.Name = "cbchannel";
+            cbchannel.Size = new Size(147, 23);
+            cbchannel.TabIndex = 2;
+            // 
+            // cbbridging
+            // 
+            cbbridging.FormattingEnabled = true;
+            cbbridging.Location = new Point(144, 122);
+            cbbridging.Name = "cbbridging";
+            cbbridging.Size = new Size(147, 23);
+            cbbridging.TabIndex = 4;
+            // 
             // editoruform
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(304, 321);
+            Controls.Add(cbbridging);
+            Controls.Add(cbchannel);
             Controls.Add(label9);
             Controls.Add(tbessid);
             Controls.Add(btnclose);
@@ -229,8 +233,6 @@
             Controls.Add(tbscan);
             Controls.Add(tbleave);
             Controls.Add(tbdelay);
-            Controls.Add(tbbridging);
-            Controls.Add(tbchannel);
             Controls.Add(tbmac);
             Controls.Add(tbnoloader);
             Controls.Add(label8);
@@ -259,8 +261,6 @@
         private Label label8;
         private TextBox tbnoloader;
         private TextBox tbmac;
-        private TextBox tbchannel;
-        private TextBox tbbridging;
         private TextBox tbdelay;
         private TextBox tbleave;
         private TextBox tbscan;
@@ -269,5 +269,7 @@
         private Button btnclose;
         private TextBox tbessid;
         private Label label9;
+        private ComboBox cbchannel;
+        private ComboBox cbbridging;
     }
 }
