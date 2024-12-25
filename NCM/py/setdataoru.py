@@ -22,7 +22,7 @@ import time
 
 def updatedetailORU(channelconfig, essid, bridging, maccloning, iscloning, channelroam, delay, leavethreshold, scanthreshold, minsignal):
     try:
-        sqliteConnection = sqlite3.connect('C:/Users/TRAKINDO/source/repos/NCM/db/NM.db')
+        sqliteConnection = sqlite3.connect('D:/Work/Project/NCM/db/NM.db')
         cursor = sqliteConnection.cursor()
         print("Connected to SQLite")
 

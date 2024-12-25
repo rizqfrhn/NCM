@@ -1,24 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "c:\\Users\\TRAKINDO\\source\\repos\\NCM\\NCM.csproj": {}
+    "D:\\Work\\Project\\NCM\\NCM.csproj": {}
   },
   "projects": {
-    "c:\\Users\\TRAKINDO\\source\\repos\\NCM\\NCM.csproj": {
+    "D:\\Work\\Project\\NCM\\NCM.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\Users\\TRAKINDO\\source\\repos\\NCM\\NCM.csproj",
+        "projectUniqueName": "D:\\Work\\Project\\NCM\\NCM.csproj",
         "projectName": "NCM",
-        "projectPath": "c:\\Users\\TRAKINDO\\source\\repos\\NCM\\NCM.csproj",
-        "packagesPath": "C:\\Users\\TRAKINDO\\.nuget\\packages\\",
-        "outputPath": "c:\\Users\\TRAKINDO\\source\\repos\\NCM\\obj\\",
+        "projectPath": "D:\\Work\\Project\\NCM\\NCM.csproj",
+        "packagesPath": "C:\\Users\\farha\\.nuget\\packages\\",
+        "outputPath": "D:\\Work\\Project\\NCM\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\TRAKINDO\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Users\\farha\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -26,6 +22,7 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -42,9 +39,8 @@
         "restoreAuditProperties": {
           "enableAudit": "true",
           "auditLevel": "low",
-          "auditMode": "all"
-        },
-        "SdkAnalysisLevel": "9.0.100"
+          "auditMode": "direct"
+        }
       },
       "frameworks": {
         "net8.0-windows7.0": {
@@ -90,7 +86,7 @@
               "privateAssets": "none"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.100/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.302/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

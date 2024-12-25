@@ -34,22 +34,26 @@
             // 
             // dgv_oru
             // 
+            dgv_oru.AllowUserToAddRows = false;
+            dgv_oru.AllowUserToDeleteRows = false;
+            dgv_oru.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCells;
             dgv_oru.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgv_oru.Location = new Point(8, 7);
-            dgv_oru.Margin = new Padding(2);
+            dgv_oru.Location = new Point(12, 12);
             dgv_oru.Name = "dgv_oru";
             dgv_oru.RowHeadersWidth = 62;
-            dgv_oru.Size = new Size(764, 427);
+            dgv_oru.Size = new Size(1772, 820);
             dgv_oru.TabIndex = 0;
             // 
             // oruform
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(781, 442);
+            ClientSize = new Size(1796, 844);
             Controls.Add(dgv_oru);
-            Margin = new Padding(2);
+            MaximumSize = new Size(1818, 900);
+            MinimumSize = new Size(1818, 900);
             Name = "oruform";
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "ORU Management";
             Shown += oruform_Shown;
             ((System.ComponentModel.ISupportInitialize)dgv_oru).EndInit();

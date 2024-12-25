@@ -52,7 +52,7 @@ namespace NCM
         {
             scanscheduler = new System.Windows.Forms.Timer();
             scanscheduler.Tick += new EventHandler(scanscheduler_Tick);
-            scanscheduler.Interval = 500000; // in miliseconds
+            scanscheduler.Interval = 600000; // in miliseconds
             scanscheduler.Start();
         }
 
@@ -136,6 +136,21 @@ namespace NCM
                 string loaderip = baseIP + i;
 
                 // Check if the IP is reachable
+                bool isReachable = IsORUReachable(loaderip);
+                string status = isReachable ? "Online" : "Offline";
+
+                // Get the current status from the database to compare
+                string currentStatus = GetCurrentStatusFromDatabase(loaderip);
+
+                // If the status changed from Online to Offline, update the database
+                if (currentStatus == "Online" && !isReachable)
+                {
+                    // Update status to "Offline" in the database
+                    UpdateStatusToOffline(loaderip);
+                    Console.WriteLine($"Loader {loaderip} went Offline.");
+                }
+
+                // Check if the IP is reachable
                 if (IsORUReachable(loaderip))
                 {
                     // Get the MAC address for the reachable IP
@@ -193,6 +208,33 @@ namespace NCM
                 Console.WriteLine($"Scan completed.");
             }));
         }
+        private static string GetCurrentStatusFromDatabase(string ip)
+        {
+            using (SQLiteConnection conn = new SQLiteConnection(ConfigurationManager.ConnectionStrings["Key"].ConnectionString))
+            {
+                conn.Open();
+                string query = "SELECT status FROM tb_oru WHERE ip_oru = @oru";
+                SQLiteCommand command = new SQLiteCommand(query, conn);
+                command.Parameters.AddWithValue("@oru", ip);
+
+                // Execute the query and get the status
+                var result = command.ExecuteScalar();
+                return result?.ToString() ?? "Offline";  // Default to "Offline" if no result
+            }
+        }
+
+        private static void UpdateStatusToOffline(string ip)
+        {
+            using (SQLiteConnection conn = new SQLiteConnection(ConfigurationManager.ConnectionStrings["Key"].ConnectionString))
+            {
+                conn.Open();
+                string updateQuery = "UPDATE tb_oru SET status = 'Offline' WHERE ip_oru = @oru";
+                SQLiteCommand command = new SQLiteCommand(updateQuery, conn);
+                command.Parameters.AddWithValue("@oru", ip);
+
+                command.ExecuteNonQuery();
+            }
+        }
 
         // Get the MAC address of the IP address using ARP
         private static string GetMacAddress(string ipAddress)
@@ -228,7 +270,7 @@ namespace NCM
                 try
                 {
                     conn.Open();  // Ensure connection is open
-                    SQLiteDataAdapter cmd = new SQLiteDataAdapter("SELECT no_loader, ip_oru, mac, channel, tb_channelroam.desc as channelroam, essid, tb_bridging.desc as bridging, delay, leave_threshold, scan_threshold, min_signal FROM tb_oru left JOIN tb_channelroam ON tb_oru.channelroam = tb_channelroam.id_channelroam left JOIN tb_bridging ON tb_oru.bridging = tb_bridging.id_bridging ORDER BY no_loader", conn);
+                    SQLiteDataAdapter cmd = new SQLiteDataAdapter("SELECT no_loader, ip_oru, mac, channel, tb_channelroam.desc as channelroam, essid, tb_bridging.desc as bridging, delay, leave_threshold, scan_threshold, min_signal, status FROM tb_oru left JOIN tb_channelroam ON tb_oru.channelroam = tb_channelroam.id_channelroam left JOIN tb_bridging ON tb_oru.bridging = tb_bridging.id_bridging ORDER BY no_loader", conn);
                     DataTable dt = new DataTable();
                     dt.Clear();
                     cmd.Fill(dt);
@@ -236,6 +278,20 @@ namespace NCM
                     if (dt != null && dt.Rows.Count > 0)
                     {
                         dgv_oru.DataSource = dt;
+
+                        // Set the header text for each column by index or name
+                        dgv_oru.Columns["no_loader"].HeaderText = "Loader Number";
+                        dgv_oru.Columns["ip_oru"].HeaderText = "IP Address";
+                        dgv_oru.Columns["mac"].HeaderText = "MAC Address";
+                        dgv_oru.Columns["channel"].HeaderText = "Channel";
+                        dgv_oru.Columns["essid"].HeaderText = "ESSID";
+                        dgv_oru.Columns["bridging"].HeaderText = "Bridging";
+                        dgv_oru.Columns["delay"].HeaderText = "Delay";
+                        dgv_oru.Columns["leave_threshold"].HeaderText = "Leave Threshold";
+                        dgv_oru.Columns["scan_threshold"].HeaderText = "Scan Threshold";
+                        dgv_oru.Columns["min_signal"].HeaderText = "Min Signal";
+                        dgv_oru.Columns["status"].HeaderText = "Status ORU";
+
                         dgv_oru.Columns["channelroam"].Visible = false;
                         dgv_oru.Refresh();  // Refresh the DataGridView
 
@@ -278,7 +334,7 @@ namespace NCM
                 // If the IP is reachable, check if it's in the database
                 if (!IsORUInDatabase(ip))
                 {
-                    string insertIpQuery = "INSERT INTO tb_oru (id_oru, ip_oru, no_loader, mac) VALUES (ifnull((select max(id_oru) from tb_oru) + 1,1), @oru, @nolhd, @macORU);";
+                    string insertIpQuery = "INSERT INTO tb_oru (id_oru, ip_oru, no_loader, mac, status) VALUES (ifnull((select max(id_oru) from tb_oru) + 1,1), @oru, @nolhd, @macORU, 'Online');";
                     SQLiteCommand command = new SQLiteCommand(insertIpQuery, conn);
                     command.Parameters.AddWithValue("@oru", ip);
                     command.Parameters.AddWithValue("@nolhd", nolhd);
@@ -336,7 +392,7 @@ namespace NCM
                 }
                 else
                 {
-                    MessageBox.Show("Loader Still Offline!");
+                    MessageBox.Show("ORU Data is Incomplete, Wait Until It is Re-Scanned And The ORU Data is Complete!", "Caution", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
         }

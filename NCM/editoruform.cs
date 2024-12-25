@@ -7,7 +7,9 @@ using System.Data.SQLite;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
@@ -96,23 +98,34 @@ namespace NCM
         private void btnsave_Click(object sender, EventArgs e)
         {
             // Check if all TextBoxes are filled
-            // if (IsAnyTextBoxEmpty())
-            // {
-            //     // Notify the user that all TextBoxes need to be filled
-            //     MessageBox.Show("Please fill in all the fields before saving.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            // }
-            // else
-            // {
-            //     // Ensure async scan task starts after initialization
-            //     Task.Run(() => AsyncSetDataORU());
-            // }
-            Task.Run(() => AsyncSetDataORU());
+            if (tbessid.Text == "" || tbdelay.Text == "" || tbleave.Text == "" || tbscan.Text == "" || tbsignal.Text == "")
+            {
+                // Notify the user that all TextBoxes need to be filled
+                MessageBox.Show("Please fill in all the fields before saving.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            else
+            {
+                if (ChannelRoam == cbchannel.Text && ESSID == tbessid.Text &&
+                    Bridging == cbbridging.Text && tbdelay.Text == Delay && tbleave.Text == Leave &&
+                    tbscan.Text == Scan && tbsignal.Text == Signal) 
+                {
+                    MessageBox.Show("No Data Updated!", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    Channel = cbchannel.Text == "1 (2.412 GHz)" ? "1" : "11";
+                    ChannelRoam = cbchannel.Text;
+                    Bridging = cbbridging.Text;
+                    // Ensure async scan task starts after initialization
+                    Task.Run(() => AsyncSetDataORU());
+                }
+            }
         }
 
         private async Task AsyncSetDataORU()
         {
-            await SetDataORU([ConfigurationManager.AppSettings["setdataoru"], IPORU, noLHD, Mac, (cbchannel.Text == "1 (2.412 GHz)") ? "1" : "11", cbchannel.Text, tbessid.Text
-                , cbbridging.Text, tbdelay.Text, tbleave.Text, tbscan.Text, tbsignal.Text]);
+            await SetDataORU([ConfigurationManager.AppSettings["setdataoru"], IPORU, noLHD, Mac, Channel, ChannelRoam, tbessid.Text
+                , Bridging, tbdelay.Text, tbleave.Text, tbscan.Text, tbsignal.Text]);
         }
 
         static async Task SetDataORU(string[] args)
@@ -174,14 +187,5 @@ namespace NCM
         {
             this.Close();
         }
-
-        // Method to check if any TextBox is empty
-        // private bool IsAnyTextBoxEmpty()
-        // {
-        //     // Check each TextBox to see if it's empty or contains only whitespace
-        //     return tbessid.Text == "" || tbdelay.Text == "" ||
-        //            tbleave.Text == "" || tbscan.Text == "" ||
-        //            tbsignal.Text == "";
-        // }
     }
 }
