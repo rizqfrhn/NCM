@@ -18,7 +18,7 @@ namespace NCM
 {
     public partial class editoruform : Form
     {
-        string IPORU, noLHD, Mac, Channel, ChannelRoam, ESSID, Bridging, Delay, Leave, Scan, Signal;
+        string IPORU, noLHD, Mac, Channel, ChannelRoam, ESSID, Bridging, Delay, Leave, Scan, Signal, BridgingValue, ChannelRoamValue;
         public editoruform(string iporu, string noLoader, string mac, string channel, string channelroam, string essid,
             string bridging, int delay, int leave, int scan, int signal)
         {
@@ -63,7 +63,7 @@ namespace NCM
                     //dtroam.Rows.InsertAt(selectroam, 0);
 
                     cbchannel.DisplayMember = "desc";
-                    cbchannel.ValueMember = "desc";
+                    cbchannel.ValueMember = "id_channelroam";
                     cbchannel.DataSource = dtroam;
 
                     cbchannel.Refresh();
@@ -80,7 +80,7 @@ namespace NCM
                     //dtbridging.Rows.InsertAt(select, 0);
 
                     cbbridging.DisplayMember = "desc";
-                    cbbridging.ValueMember = "desc";
+                    cbbridging.ValueMember = "id_bridging";
                     cbbridging.DataSource = dtbridging;
 
                     cbbridging.Refresh();
@@ -115,7 +115,9 @@ namespace NCM
                 {
                     Channel = cbchannel.Text == "1 (2.412 GHz)" ? "1" : "11";
                     ChannelRoam = cbchannel.Text;
+                    ChannelRoamValue = cbchannel.SelectedValue.ToString();
                     Bridging = cbbridging.Text;
+                    BridgingValue = cbbridging.SelectedValue.ToString();
                     // Ensure async scan task starts after initialization
                     Task.Run(() => AsyncSetDataORU());
                 }
@@ -125,7 +127,7 @@ namespace NCM
         private async Task AsyncSetDataORU()
         {
             await SetDataORU([ConfigurationManager.AppSettings["setdataoru"], IPORU, noLHD, Mac, Channel, ChannelRoam, tbessid.Text
-                , Bridging, tbdelay.Text, tbleave.Text, tbscan.Text, tbsignal.Text]);
+                , Bridging, tbdelay.Text, tbleave.Text, tbscan.Text, tbsignal.Text, BridgingValue, ChannelRoamValue]);
         }
 
         static async Task SetDataORU(string[] args)
@@ -134,7 +136,7 @@ namespace NCM
             ProcessStartInfo start = new ProcessStartInfo()
             {
                 FileName = ConfigurationManager.AppSettings["python"],
-                Arguments = string.Format("{0} {1} {2} {3}", args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11]),
+                Arguments = string.Format("{0} \"{1}\" \"{2}\" \"{3}\" \"{4}\" \"{5}\" \"{6}\" \"{7}\" \"{8}\" \"{9}\" \"{10}\" \"{11}\" \"{12}\" \"{13}\"", args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13]),
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true, // Redirect errors

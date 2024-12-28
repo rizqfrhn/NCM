@@ -270,7 +270,7 @@ namespace NCM
                 try
                 {
                     conn.Open();  // Ensure connection is open
-                    SQLiteDataAdapter cmd = new SQLiteDataAdapter("SELECT no_loader, ip_oru, mac, channel, tb_channelroam.desc as channelroam, essid, tb_bridging.desc as bridging, delay, leave_threshold, scan_threshold, min_signal, status FROM tb_oru left JOIN tb_channelroam ON tb_oru.channelroam = tb_channelroam.id_channelroam left JOIN tb_bridging ON tb_oru.bridging = tb_bridging.id_bridging ORDER BY no_loader", conn);
+                    SQLiteDataAdapter cmd = new SQLiteDataAdapter("SELECT no_loader, ip_oru, mac, channel, tb_channelroam.Id_channelroam as idchannelroam, tb_channelroam.desc as channelroam, essid, tb_bridging.Id_bridging as idbridging, tb_bridging.desc as bridging, delay, leave_threshold, scan_threshold, min_signal, status FROM tb_oru left JOIN tb_channelroam ON tb_oru.channelroam = tb_channelroam.id_channelroam left JOIN tb_bridging ON tb_oru.bridging = tb_bridging.id_bridging ORDER BY no_loader", conn);
                     DataTable dt = new DataTable();
                     dt.Clear();
                     cmd.Fill(dt);
@@ -293,6 +293,8 @@ namespace NCM
                         dgv_oru.Columns["status"].HeaderText = "Status ORU";
 
                         dgv_oru.Columns["channelroam"].Visible = false;
+                        dgv_oru.Columns["idchannelroam"].Visible = false;
+                        dgv_oru.Columns["idbridging"].Visible = false;
                         dgv_oru.Refresh();  // Refresh the DataGridView
 
                         // Make the DataGridView non-editable
@@ -379,16 +381,21 @@ namespace NCM
                     string iporu = dgv_oru.Rows[e.RowIndex].Cells["ip_oru"].Value.ToString();
                     string mac = dgv_oru.Rows[e.RowIndex].Cells["mac"].Value.ToString();
                     string channel = dgv_oru.Rows[e.RowIndex].Cells["channel"].Value.ToString();
-                    string channelroam = dgv_oru.Rows[e.RowIndex].Cells["channelroam"].Value.ToString();
+                    string channelroam = dgv_oru.Rows[e.RowIndex].Cells["idchannelroam"].Value.ToString();
                     string essid = dgv_oru.Rows[e.RowIndex].Cells["essid"].Value.ToString();
-                    string bridging = dgv_oru.Rows[e.RowIndex].Cells["bridging"].Value.ToString();
+                    string bridging = dgv_oru.Rows[e.RowIndex].Cells["idbridging"].Value.ToString();
                     int delay = Convert.ToInt32(dgv_oru.Rows[e.RowIndex].Cells["delay"].Value) == null ? 0 : Convert.ToInt32(dgv_oru.Rows[e.RowIndex].Cells["delay"].Value);
                     int leave = Convert.ToInt32(dgv_oru.Rows[e.RowIndex].Cells["leave_threshold"].Value) == null ? 0 : Convert.ToInt32(dgv_oru.Rows[e.RowIndex].Cells["leave_threshold"].Value);
                     int scan = Convert.ToInt32(dgv_oru.Rows[e.RowIndex].Cells["scan_threshold"].Value) == null ? 0 : Convert.ToInt32(dgv_oru.Rows[e.RowIndex].Cells["scan_threshold"].Value);
                     int signal = Convert.ToInt32(dgv_oru.Rows[e.RowIndex].Cells["min_signal"].Value) == null ? 0 : Convert.ToInt32(dgv_oru.Rows[e.RowIndex].Cells["min_signal"].Value);
+                    string statusoru = dgv_oru.Rows[e.RowIndex].Cells["status"].Value.ToString();
 
-                    // Open the new form and pass the data
-                    EditOru(iporu, noLoader, mac, channel, channelroam, essid, bridging, delay, leave, scan, signal);
+                    if(statusoru == "Online") {
+                        // Open the new form and pass the data
+                        EditOru(iporu, noLoader, mac, channel, channelroam, essid, bridging, delay, leave, scan, signal);
+                    } else {
+                        MessageBox.Show("ORU Offline, Wait Until It is Re-Scanned", "Caution", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
                 }
                 else
                 {

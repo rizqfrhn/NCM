@@ -18,11 +18,12 @@ import time
 # sys.argv[1] = ip loader, sys.argv[2] = no loader, sys.argv[3] = mac address,
 # sys.argv[4] = channel, sys.argv[5] = channelroam, sys.argv[6] = essid,
 # sys.argv[7] = bridging, sys.argv[8] = delay, sys.argv[9] = leave threshold,
-# sys.argv[10] = scan threshold, sys.argv[11] = min signal
+# sys.argv[10] = scan threshold, sys.argv[11] = min signal, sys.argv[12] = Bridging ID
+# sys.argv[13] = Channel Roam ID
 
 def updatedetailORU(channelconfig, essid, bridging, maccloning, iscloning, channelroam, delay, leavethreshold, scanthreshold, minsignal):
     try:
-        sqliteConnection = sqlite3.connect('D:/Work/Project/NCM/db/NM.db')
+        sqliteConnection = sqlite3.connect('C:/Users/TRAKINDO/source/repos/NCM/db/NM.db')
         cursor = sqliteConnection.cursor()
         print("Connected to SQLite")
 
@@ -42,18 +43,6 @@ def updatedetailORU(channelconfig, essid, bridging, maccloning, iscloning, chann
         if sqliteConnection:
             sqliteConnection.close()
             print("The SQLite connection is closed")
-
-# Variable for insert DB
-channelconfig = string
-essid = string
-bridging = string
-maccloning = string
-iscloning = string
-channelroam = string
-delay = int
-leavethreshold = int
-scanthreshold = int
-minsignal = int
 
 options = webdriver.ChromeOptions()
 options.headless = True
@@ -100,16 +89,16 @@ def main():
 						loginbtn.click()
 						browser.execute_script('window.open("")')
 						time.sleep(3)
-						print("Go go Login without password!!")
+						print("Login without password")
 				except:
-					print('Aneh nih')
+					print('Pass')
 					pass
 					
 				# Select Wifi1 or Wifi2
 				# getchannel = browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[1]/div[1]/fieldset/table/tbody/tr[3]/td[2]')
 				getchannel = browser.find_element(By.XPATH, "//div[1]/fieldset/table/tbody/tr[3]/td[2]")
 				
-				print('Lewat Sini')
+				print('Get Channel')
 
 				if int(getchannel.text) == 6:
 					wifi2btn = browser.find_element(By.XPATH,"//*[contains(@href, 'wireless_edit/radio1')]")
@@ -119,29 +108,27 @@ def main():
 
 					# Get channel from Device Config and essid from Interface Config
 					setchannelconfig = Select(browser.find_element(By.NAME,'cbid.wireless.radio1.channel_24'))
+					setchannelconfig.deselect_all()
 					setchannelconfig.select_by_value(sys.argv[4])
 
 					setessid = browser.find_element(By.NAME,'cbid.wireless.radio1w0.ssid')
+					setessid.clear()
 					setessid.send_keys(sys.argv[6])
 					
 					# Go to Advanced Settings tab on Interface Config
 					adsettab  = browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[2]/fieldset[2]/ul/li[3]/a')
 					adsettab.click()
 					
-					print("udah buka advanced setting")
+					print("Open Tab")
 
 					setbridging = Select(browser.find_element(By.ID,'cbid.wireless.radio1w0.bridge_mode'))
 					setbridging.select_by_visible_text(sys.argv[7])
 
 					if setbridging.first_selected_option.text != '125nat':
 						if browser.find_element(By.ID,'cbid.wireless.radio1w0.clone_mac'):
-							print('clone mac masuk')
 							iscloning = "0"
-							print('is cloning')
 							getmaccloning = browser.find_element(By.ID,'cbid.wireless.radio1w0.clone_mac')
-							print('dapet mac')
 							maccloning = getmaccloning.get_attribute('value')
-							print('dapet mac value')
 						else: 
 							iscloning = "1"
 							maccloning = ""
@@ -154,29 +141,32 @@ def main():
 					roamtab.click()
 
 					setchannelroam = Select(browser.find_element(By.ID,'cbid.wireless.radio1w0.scan_freq'))
-					setchannelroam.select_by_visible_text(sys.argv[5])
+					setchannelroam.deselect_all()
+					setchannelroam.select_by_value(sys.argv[5])
 					setdelay = browser.find_element(By.ID,'cbid.wireless.radio1w0.scan_interval')
+					setdelay.clear()
 					setdelay.send_keys(sys.argv[8])
 					setleavethres = browser.find_element(By.ID,'cbid.wireless.radio1w0.leave_threshold')
+					setleavethres.clear()
 					setleavethres.send_keys(sys.argv[9])
 					setscanthres = browser.find_element(By.ID,'cbid.wireless.radio1w0.scan_threshold')
+					setscanthres.clear()
 					setscanthres.send_keys(sys.argv[10])
 					setminsignal = browser.find_element(By.ID,'cbid.wireless.radio1w0.roam_min_level')
+					setminsignal.clear()
 					setminsignal.send_keys(sys.argv[11])
 
-					print('Capeeee')
-
-					# saveconfig = browser.find_element(By.NAME,'cbi.apply')
-					saveconfig = browser.find_element(By.CLASS_NAME,'cbi-button cbi-button-apply')
+					saveconfig = browser.find_element(By.CLASS_NAME,'cbi-button-apply')
 					saveconfig.click()
-					print("Click Save")
-					browser.execute_script('window.open("")')
-					time.sleep(3)
-					
+
+					print("Click Save")	
+
 					print('Set Data ORU')
 					
 					# Insert data to DB
 					updatedetailORU(sys.argv[4], sys.argv[6], sys.argv[7], sys.argv[3], iscloning, sys.argv[5], sys.argv[8], sys.argv[9], sys.argv[10], sys.argv[11])
+
+
 					browser.close()
 				else:
 					wifi1btn = browser.find_element(By.XPATH,"//*[contains(@href, 'wireless_edit/radio0')]")
@@ -184,66 +174,76 @@ def main():
 					time.sleep(3)
 					print("Open Wifi 1")
 
+					print(sys.argv[4])
+					print(sys.argv[5])
 					# Get channel from Device Config and essid from Interface Config
 					setchannelconfig = Select(browser.find_element(By.NAME,'cbid.wireless.radio0.channel_24'))
+					setchannelconfig.deselect_all()
 					setchannelconfig.select_by_value(sys.argv[4])
 
 					setessid = browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[2]/fieldset[2]/div/div[1]/div[3]/div/div/table/tbody/tr/td/input')
+					setessid.clear()
 					setessid.send_keys(sys.argv[6])
+
+					browser.save_screenshot(' tab general.png')
 					
 					# Go to Advanced Settings tab on Interface Config
 					adsettab  = browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[2]/fieldset[2]/ul/li[3]/a')
 					adsettab.click()
 					
-					print("udah buka advanced setting")
+					print("Open Tab")
 
 					setbridging = Select(browser.find_element(By.ID,'cbid.wireless.radio0w0.bridge_mode'))
 					setbridging.select_by_visible_text(sys.argv[7])
 
+					print("Set Bridging Mode")
+
 					if setbridging.first_selected_option.get_attribute('value') == '125nat':
 						if browser.find_element(By.ID,'cbid.wireless.radio0w0.clone_mac'):
-							print('clone mac masuk')
 							iscloning = "0"
-							print('is cloning')
 							getmaccloning = browser.find_element(By.ID,'cbid.wireless.radio0w0.clone_mac')
-							print('dapet mac')
 							maccloning = getmaccloning.get_attribute('value')
-							print('dapet mac value')
 						else: 
 							iscloning = "1"
 							maccloning = ""
 					else:
 						iscloning = ""
 						maccloning = ""
+
+					browser.save_screenshot('tab advanced.png')
 					
 					# Go to Roaming tab
 					roamtab  = browser.find_element(By.ID,'tab.wireless.radio0w0.roaming')
 					roamtab.click()
 
 					setchannelroam = Select(browser.find_element(By.ID,'cbid.wireless.radio0w0.scan_freq'))
+					setchannelroam.deselect_all()
 					setchannelroam.select_by_visible_text(sys.argv[5])
 					setdelay = browser.find_element(By.ID,'cbid.wireless.radio0w0.scan_interval')
+					setdelay.clear()
 					setdelay.send_keys(sys.argv[8])
 					setleavethres = browser.find_element(By.ID,'cbid.wireless.radio0w0.leave_threshold')
+					setleavethres.clear()
 					setleavethres.send_keys(sys.argv[9])
 					setscanthres = browser.find_element(By.ID,'cbid.wireless.radio0w0.scan_threshold')
+					setscanthres.clear()
 					setscanthres.send_keys(sys.argv[10])
 					setminsignal = browser.find_element(By.ID,'cbid.wireless.radio0w0.roam_min_level')
-					setminsignal.send_keys(sys.argv[11])
+					setminsignal.clear()  # Clear the existing value
+					setminsignal.send_keys(sys.argv[11])  # Send the new value
 
-					print('Capeeee')
+					browser.save_screenshot('tab roam.png')
 
-					# saveconfig = browser.find_element(By.NAME,'cbi.apply')
-					saveconfig = browser.find_element(By.CLASS_NAME,'cbi-button cbi-button-apply')
+					saveconfig = browser.find_element(By.CLASS_NAME,'cbi-button-apply')
 					saveconfig.click()
+
 					print("Click Save")
-					browser.execute_script('window.open("")')
-					time.sleep(3)
 					
 					print('Set Data ORU')
 					
 					# Insert data to DB
-					updatedetailORU(sys.argv[4], sys.argv[6], sys.argv[7], sys.argv[3], iscloning, sys.argv[5], sys.argv[8], sys.argv[9], sys.argv[10], sys.argv[11])
+					updatedetailORU(sys.argv[4], sys.argv[6], sys.argv[12], sys.argv[3], iscloning, sys.argv[13], sys.argv[8], sys.argv[9], sys.argv[10], sys.argv[11])
+				
 					browser.close()
 		except:
 			print('Failed To Set Configuration')
