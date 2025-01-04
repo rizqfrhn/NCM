@@ -113,10 +113,16 @@ def main():
 					time.sleep(3)
 					print("Open Wifi 2")
 					
-					# Get channel from Device Config and essid from Interface Config
-					getchannelconfig = Select(browser.find_element(By.NAME,'cbid.wireless.radio1.channel_24'))
-					getessid = browser.find_element(By.NAME,'cbid.wireless.radio1w0.ssid')
+					if browser.find_element(By.NAME,'cbid.wireless.radio1.channel_24').is_displayed:
+						# Get channel from Device Config and essid from Interface Config
+						getchannelconfig = Select(browser.find_element(By.NAME,'cbid.wireless.radio1.channel_24'))
+						autochannel = 0
+					else:
+						autochannel = 1
+						print("Auto Channel")
 					
+					getessid = browser.find_element(By.NAME,'cbid.wireless.radio1w0.ssid')
+
 					# Go to Advanced Settings tab on Interface Config
 					adsettab  = browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[2]/fieldset[2]/ul/li[3]/a')
 					adsettab.click()
@@ -148,7 +154,14 @@ def main():
 					getminsignal = browser.find_element(By.ID,'cbid.wireless.radio1w0.roam_min_level')
 
 					# Input data from element to variable
-					channelconfig = getchannelconfig.first_selected_option.get_attribute('value')
+					if autochannel == 0 :
+						channelconfig = getchannelconfig.first_selected_option.get_attribute('value')
+					else : 
+						if int(getchannelroam.first_selected_option.get_attribute('value')) == 2412 :
+							channelconfig = 1
+						else :
+							channelconfig = 11
+
 					essid = getessid.get_attribute('value')
 					bridging = getbridging.first_selected_option.get_attribute('value')
 					channelroam = getchannelroam.first_selected_option.get_attribute('value')
@@ -169,8 +182,14 @@ def main():
 					time.sleep(3)
 					print("Open Wifi 1")
 
-					# Get channel from Device Config and essid from Interface Config
-					getchannelconfig = Select(browser.find_element(By.NAME,'cbid.wireless.radio0.channel_24'))
+					if browser.find_element(By.NAME,'cbid.wireless.radio0.channel_24').is_displayed:
+						# Get channel from Device Config and essid from Interface Config
+						getchannelconfig = Select(browser.find_element(By.NAME,'cbid.wireless.radio0.channel_24'))
+						autochannel = 0
+					else:
+						autochannel = 1
+						print("Auto Channel")
+					
 					getessid = browser.find_element(By.NAME,'cbid.wireless.radio0w0.ssid')
 					
 					# Go to Advanced Settings tab on Interface Config
@@ -204,7 +223,14 @@ def main():
 					getminsignal = browser.find_element(By.ID,'cbid.wireless.radio0w0.roam_min_level')
 
 					# Input data from element to variable
-					channelconfig = getchannelconfig.first_selected_option.get_attribute('value')
+					if autochannel == 0 :
+						channelconfig = getchannelconfig.first_selected_option.get_attribute('value')
+					else : 
+						if int(getchannelroam.first_selected_option.get_attribute('value')) == 2412 :
+							channelconfig = 1
+						else :
+							channelconfig = 11
+
 					essid = getessid.get_attribute('value')
 					bridging = getbridging.first_selected_option.get_attribute('value')
 					channelroam = getchannelroam.first_selected_option.get_attribute('value')

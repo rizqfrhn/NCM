@@ -1,6 +1,7 @@
 from msvcrt import getch
 import string
 from selenium import webdriver
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -106,10 +107,15 @@ def main():
 					time.sleep(3)
 					print("Open Wifi 2")
 
-					# Get channel from Device Config and essid from Interface Config
-					setchannelconfig = Select(browser.find_element(By.NAME,'cbid.wireless.radio1.channel_24'))
-					setchannelconfig.deselect_all()
-					setchannelconfig.select_by_value(sys.argv[4])
+					if browser.find_element(By.NAME,'cbid.wireless.radio1.channel_24').is_displayed:
+						# Set channel from Device Config and essid from Interface Config
+						setchannelconfig = Select(browser.find_element(By.NAME,'cbid.wireless.radio1.channel_24'))
+						setchannelconfig.deselect_all()
+						setchannelconfig.select_by_value(sys.argv[4])
+						autochannel = 0
+					else:
+						autochannel = 1
+						print("Auto Channel")
 
 					setessid = browser.find_element(By.NAME,'cbid.wireless.radio1w0.ssid')
 					setessid.clear()
@@ -156,8 +162,7 @@ def main():
 					setminsignal.clear()
 					setminsignal.send_keys(sys.argv[11])
 
-					saveconfig = browser.find_element(By.CLASS_NAME,'cbi-button-apply')
-					saveconfig.click()
+					ActionChains(browser).double_click(WebDriverWait(browser, 3).until(EC.element_to_be_clickable((By.CLASS_NAME,'cbi-button-apply')))).perform()
 
 					print("Click Save")	
 
@@ -166,7 +171,6 @@ def main():
 					# Insert data to DB
 					updatedetailORU(sys.argv[4], sys.argv[6], sys.argv[7], sys.argv[3], iscloning, sys.argv[5], sys.argv[8], sys.argv[9], sys.argv[10], sys.argv[11])
 
-
 					browser.close()
 				else:
 					wifi1btn = browser.find_element(By.XPATH,"//*[contains(@href, 'wireless_edit/radio0')]")
@@ -174,12 +178,15 @@ def main():
 					time.sleep(3)
 					print("Open Wifi 1")
 
-					print(sys.argv[4])
-					print(sys.argv[5])
-					# Get channel from Device Config and essid from Interface Config
-					setchannelconfig = Select(browser.find_element(By.NAME,'cbid.wireless.radio0.channel_24'))
-					setchannelconfig.deselect_all()
-					setchannelconfig.select_by_value(sys.argv[4])
+					if browser.find_element(By.NAME,'cbid.wireless.radio0.channel_24').is_displayed:
+						# Set channel from Device Config and essid from Interface Config
+						setchannelconfig = Select(browser.find_element(By.NAME,'cbid.wireless.radio0.channel_24'))
+						setchannelconfig.deselect_all()
+						setchannelconfig.select_by_value(sys.argv[4])
+						autochannel = 0
+					else:
+						autochannel = 1
+						print("Auto Channel")
 
 					setessid = browser.find_element(By.XPATH,'/html/body/div[2]/div/div[4]/form/div[2]/fieldset[2]/div/div[1]/div[3]/div/div/table/tbody/tr/td/input')
 					setessid.clear()
@@ -234,8 +241,10 @@ def main():
 
 					browser.save_screenshot('tab roam.png')
 
-					saveconfig = browser.find_element(By.CLASS_NAME,'cbi-button-apply')
-					saveconfig.click()
+					# saveconfig = browser.find_element(By.CLASS_NAME,'cbi-button-apply')
+					# saveconfig.click()
+
+					ActionChains(browser).double_click(WebDriverWait(browser, 3).until(EC.element_to_be_clickable((By.CLASS_NAME,'cbi-button-apply')))).perform()
 
 					print("Click Save")
 					

@@ -270,7 +270,7 @@ namespace NCM
                 try
                 {
                     conn.Open();  // Ensure connection is open
-                    SQLiteDataAdapter cmd = new SQLiteDataAdapter("SELECT no_loader, ip_oru, mac, channel, tb_channelroam.Id_channelroam as idchannelroam, tb_channelroam.desc as channelroam, essid, tb_bridging.Id_bridging as idbridging, tb_bridging.desc as bridging, delay, leave_threshold, scan_threshold, min_signal, status FROM tb_oru left JOIN tb_channelroam ON tb_oru.channelroam = tb_channelroam.id_channelroam left JOIN tb_bridging ON tb_oru.bridging = tb_bridging.id_bridging ORDER BY no_loader", conn);
+                    SQLiteDataAdapter cmd = new SQLiteDataAdapter("SELECT no_loader, ip_oru, mac, channel, tb_channelroam.Id_channelroam as idchannelroam, tb_channelroam.desc as channelroam, essid, tb_bridging.Id_bridging as idbridging, tb_bridging.desc as bridging, delay, leave_threshold, scan_threshold, min_signal, status FROM tb_oru left JOIN tb_channelroam ON tb_oru.channelroam = tb_channelroam.id_channelroam left JOIN tb_bridging ON tb_oru.bridging = tb_bridging.id_bridging ORDER BY status desc, no_loader asc", conn);
                     DataTable dt = new DataTable();
                     dt.Clear();
                     cmd.Fill(dt);
